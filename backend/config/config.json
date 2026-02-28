@@ -1,0 +1,9 @@
+{
+  "development": {
+    "username": "newsuser",
+    "password": "password123",
+    "database": "classroom_db",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
