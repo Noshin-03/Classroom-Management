@@ -23,7 +23,13 @@ exports.getAll = async (req, res) => {
 exports.create = async (req, res) => {
   const { name, subject_id } = req.body;
   try {
-    const cls = await Class.create({ name, subject_id });
+    let join_code;
+    let exists = true;
+    while (exists) {
+      join_code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      exists = await Class.findOne({ where: { join_code } });
+    }
+    const cls = await Class.create({ name, subject_id, join_code });
     res.json(cls);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -46,6 +52,24 @@ exports.remove = async (req, res) => {
   try {
     await Class.destroy({ where: { id: req.params.id } });
     res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.joinByCode = async (req, res) => {
+  const { join_code } = req.body;
+  try {
+    const cls = await Class.findOne({ where: { join_code } });
+    if (!cls) return res.status(404).json({ message: 'Invalid join code' });
+
+    const existing = await Enrollment.findOne({ 
+      where: { student_id: req.userId, class_id: cls.id } 
+    });
+    if (existing) return res.status(400).json({ message: 'Already enrolled' });
+
+    await Enrollment.create({ student_id: req.userId, class_id: cls.id });
+    res.json({ message: 'Joined successfully', class: cls });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

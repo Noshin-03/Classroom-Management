@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   Class.init({
     name: DataTypes.STRING,
-    subject_id: DataTypes.INTEGER
+    subject_id: DataTypes.INTEGER,
+    join_code: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'Class',

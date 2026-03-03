@@ -6,7 +6,9 @@ export default function Classes() {
   const [subjects, setSubjects] = useState([]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showJoinForm, setShowJoinForm] = useState(false);
   const [form, setForm] = useState({ name: "", subject_id: "" });
+  const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(true);
   const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
 
@@ -47,6 +49,19 @@ export default function Classes() {
     }
   }
 
+  async function handleJoin() {
+    if (!joinCode) return alert("Please enter a join code");
+    const data = await apiPost("/api/classes/join", { join_code: joinCode.toUpperCase() });
+    if (data.message === "Joined successfully") {
+      alert("Joined successfully!");
+      setShowJoinForm(false);
+      setJoinCode("");
+      loadClasses();
+    } else {
+      alert(data.message || "Failed to join");
+    }
+  }
+
   const filtered = classes.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -62,11 +77,50 @@ export default function Classes() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        {loggedUser.role === "teacher" && (
-          <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Create</button>
-        )}
+        <div style={{ display: "flex", gap: 12 }}>
+          {loggedUser.role === "student" && (
+            <button className="btn btn-outline" onClick={() => setShowJoinForm(true)}>
+              + Join with Code
+            </button>
+          )}
+          {loggedUser.role === "teacher" && (
+            <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+              + Create
+            </button>
+          )}
+        </div>
       </div>
 
+      {}
+      {showJoinForm && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999
+        }}>
+          <div className="card" style={{ width: 400 }}>
+            <h3 style={{ marginBottom: 8 }}>Join a Class</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: 20 }}>
+              Ask your teacher for the class join code
+            </p>
+            <div className="form-group">
+              <label className="form-label">Join Code</label>
+              <input
+                className="form-input"
+                placeholder="e.g. ABC123"
+                value={joinCode}
+                onChange={e => setJoinCode(e.target.value)}
+                style={{ textTransform: "uppercase", letterSpacing: "0.2em", fontSize: "1.2rem", textAlign: "center" }}
+              />
+            </div>
+            <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 8 }}>
+              <button className="btn btn-outline" onClick={() => setShowJoinForm(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleJoin}>Join Class</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {}
       {showForm && (
         <div style={{
           position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
@@ -95,6 +149,7 @@ export default function Classes() {
         </div>
       )}
 
+      {}
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
         <table className="data-table">
           <thead>
@@ -102,19 +157,38 @@ export default function Classes() {
               <th>Name</th>
               <th>Subject</th>
               <th>Department</th>
+              {loggedUser.role === 'teacher' && <th>Join Code</th>}
               <th>Students</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--text-muted)" }}>No classes found</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>No classes found</td></tr>
             ) : filtered.map(c => (
               <tr key={c.id}>
                 <td style={{ fontWeight: 500 }}>{c.name}</td>
                 <td><span className="badge">{c.Subject?.code || "-"}</span></td>
                 <td style={{ color: "var(--text-muted)" }}>{c.Subject?.Department?.name || "-"}</td>
+                {loggedUser.role === 'teacher' && (
+                <td>
+                  {c.join_code ? (
+                    <span style={{
+                      fontFamily: "monospace",
+                      fontSize: "1rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.15em",
+                      color: "var(--accent)",
+                      background: "var(--accent-soft)",
+                      padding: "4px 10px",
+                      borderRadius: 6,
+                    }}>
+                      {c.join_code}
+                    </span>
+                  ) : "-"}
+                </td>
+                )}
                 <td>{c.studentCount || 0}</td>
               </tr>
             ))}
