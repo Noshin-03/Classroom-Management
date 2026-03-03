@@ -15,6 +15,9 @@ app.use('/api/classes', require('./routes/classes'));
 app.use('/api/enrollments', require('./routes/enrollments'));
 app.use('/api/faculty', require('./routes/faculty'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/assignments', require('./routes/assignments'));
+app.use('/api/submissions', require('./routes/submissions'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Classroom API running' });
@@ -22,7 +25,6 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-// Test database connection and start server
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Database connection established successfully');

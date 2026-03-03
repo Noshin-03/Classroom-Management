@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiGet, apiPost } from "../../api/api";
+import { useNavigate } from "react-router-dom";
 
 export default function Classes() {
   const [classes, setClasses] = useState([]);
@@ -11,6 +12,7 @@ export default function Classes() {
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(true);
   const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadClasses();
@@ -189,6 +191,15 @@ export default function Classes() {
                   ) : "-"}
                 </td>
                 )}
+                <td>
+                  <button 
+                    className="btn btn-outline" 
+                    style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+                    onClick={() => navigate(`/classes/${c.id}`)}
+                  >
+                    View
+                  </button>
+                </td>
                 <td>{c.studentCount || 0}</td>
               </tr>
             ))}

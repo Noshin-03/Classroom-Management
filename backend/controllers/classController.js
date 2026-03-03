@@ -2,18 +2,41 @@ const { Class, Subject, Department, Enrollment } = require('../models');
 
 exports.getAll = async (req, res) => {
   try {
-    const classes = await Class.findAll({
-      include: [{
-        model: Subject,
-        attributes: ['id', 'name', 'code'],
-        include: [{ model: Department, attributes: ['id', 'name'] }]
-      }],
-      order: [['createdAt', 'DESC']]
-    });
+    let classes;
+
+    const { User } = require('../models');
+    const user = await User.findByPk(req.userId);
+
+    if (user.role === 'teacher') {
+      classes = await Class.findAll({
+        where: { teacher_id: req.userId },
+        include: [{
+          model: Subject,
+          attributes: ['id', 'name', 'code'],
+          include: [{ model: Department, attributes: ['id', 'name'] }]
+        }],
+        order: [['createdAt', 'DESC']]
+      });
+    } else {
+      const enrollments = await Enrollment.findAll({
+        where: { student_id: req.userId },
+        include: [{
+          model: Class,
+          include: [{
+            model: Subject,
+            attributes: ['id', 'name', 'code'],
+            include: [{ model: Department, attributes: ['id', 'name'] }]
+          }]
+        }]
+      });
+      classes = enrollments.map(e => e.Class);
+    }
+
     const result = await Promise.all(classes.map(async c => {
       const studentCount = await Enrollment.count({ where: { class_id: c.id } });
       return { ...c.toJSON(), studentCount };
     }));
+
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -29,7 +52,7 @@ exports.create = async (req, res) => {
       join_code = Math.random().toString(36).substring(2, 8).toUpperCase();
       exists = await Class.findOne({ where: { join_code } });
     }
-    const cls = await Class.create({ name, subject_id, join_code });
+    const cls = await Class.create({ name, subject_id, join_code, teacher_id: req.userId });
     res.json(cls);
   } catch (err) {
     res.status(500).json({ message: err.message });

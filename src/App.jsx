@@ -10,6 +10,7 @@ import Classes from "./pages/classes/Classes";
 import Enrollments from "./pages/enrollments/Enrollments";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
+import ClassDetail from "./pages/classes/ClassDetail";
 
 function ProtectedLayout({ children, title, subtitle }) {
   const token = localStorage.getItem("token");
@@ -61,6 +62,11 @@ export default function App() {
           <Route path="/enrollments" element={
             <ProtectedLayout title="Enrollments" subtitle="Manage student enrollments.">
               <Enrollments />
+            </ProtectedLayout>
+          } />
+          <Route path="/classes/:id" element={
+            <ProtectedLayout title="Class Detail" subtitle="View class details, announcements and assignments.">
+              <ClassDetail />
             </ProtectedLayout>
           } />
         </Routes>
