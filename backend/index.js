@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { sequelize } = require('./models');
 
 const app = express();
 app.use(cors());
@@ -19,6 +21,16 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+// Test database connection and start server
+sequelize.authenticate()
+  .then(() => {
+    console.log('✅ Database connection established successfully');
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('❌ Unable to connect to the database:', err.message);
+    process.exit(1);
+  });

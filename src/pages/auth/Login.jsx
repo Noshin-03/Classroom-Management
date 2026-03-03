@@ -23,7 +23,8 @@ export default function Login() {
         alert(data.message || "Login failed");
       }
     } catch (err) {
-      alert("Server error");
+      console.error("Login error:", err);
+      alert("Server error: " + err.message);
     }
   }
 
