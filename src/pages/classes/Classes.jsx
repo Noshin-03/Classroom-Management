@@ -195,7 +195,7 @@ export default function Classes() {
                   <button 
                     className="btn btn-outline" 
                     style={{ padding: "6px 14px", fontSize: "0.8rem" }}
-                    onClick={() => navigate(`/classes/${c.id}`)}
+                    onClick={() => navigate(`/class/${c.id}`)}
                   >
                     View
                   </button>

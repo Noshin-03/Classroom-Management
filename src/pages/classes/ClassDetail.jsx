@@ -259,7 +259,7 @@ export default function ClassDetail() {
             </div>
           ) : assignments.map(ass => (
             <div className="card" key={ass.id} style={{ marginBottom: 16, cursor: "pointer" }}
-              onClick={() => navigate(`/assignments/${ass.id}`)}>
+              onClick={() => navigate(`/assignment/${ass.id}`)}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   <div style={{

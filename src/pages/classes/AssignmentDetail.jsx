@@ -38,7 +38,7 @@ export default function AssignmentDetail() {
     if (submitText) formData.append("content", submitText);
     if (submitFile) formData.append("file", submitFile);
     const token = localStorage.getItem("token");
-    const res = await fetch("http://127.0.0.1:3000/api/submissions/submit", {
+    const res = await fetch("http://127.0.0.1:3000/api/submissions", {
       method: "POST",
       headers: { "Authorization": `Bearer ${token}` },
       body: formData,
@@ -74,7 +74,7 @@ export default function AssignmentDetail() {
   return (
     <div>
       <div className="card" style={{ marginBottom: 24 }}>
-        <button onClick={() => navigate(`/classes/${assignment.class_id}`)}
+        <button onClick={() => navigate(`/class/${assignment.class_id}`)}
           style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", marginBottom: 16, fontSize: "0.85rem", padding: 0 }}>
           Back to Class
         </button>
