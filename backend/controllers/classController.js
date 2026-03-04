@@ -62,7 +62,13 @@ exports.create = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const cls = await Class.findByPk(req.params.id, {
-      include: [{ model: Subject, include: [{ model: Department }] }]
+      include: [{ 
+        model: Subject, 
+        include: [
+          { model: Department },
+          { model: require('../models').User, attributes: ['id', 'name', 'email'] }
+        ] 
+      }]
     });
     if (!cls) return res.status(404).json({ message: 'Not found' });
     res.json(cls);

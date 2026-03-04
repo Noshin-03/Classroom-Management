@@ -15,9 +15,9 @@ app.use('/api/classes', require('./routes/classes'));
 app.use('/api/enrollments', require('./routes/enrollments'));
 app.use('/api/faculty', require('./routes/faculty'));
 app.use('/api/dashboard', require('./routes/dashboard'));
-app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/submissions', require('./routes/submissions'));
+app.use('/uploads', express.static('uploads'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Classroom API running' });

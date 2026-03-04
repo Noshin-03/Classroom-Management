@@ -1,8 +1,20 @@
 import { useTheme } from "../context/ThemeContext";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Navbar({ title, subtitle }) {
   const { dark, setDark } = useTheme();
-  const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+  const navigate = useNavigate();
+  const [loggedUser, setLoggedUser] = useState(JSON.parse(localStorage.getItem("loggedUser") || "{}"));
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setLoggedUser(JSON.parse(localStorage.getItem("loggedUser") || "{}"));
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   return (
     <header style={{
@@ -44,7 +56,7 @@ export default function Navbar({ title, subtitle }) {
         </button>
 
         {/* User */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div onClick={() => navigate("/profile")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 36,
             height: 36,

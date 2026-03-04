@@ -15,6 +15,20 @@ exports.getAll = async (req, res) => {
   }
 };
 
+exports.getByClass = async (req, res) => {
+  try {
+    const enrollments = await Enrollment.findAll({
+      where: { class_id: req.params.classId },
+      include: [
+        { model: User, attributes: ['id', 'name', 'email', 'role'] }
+      ]
+    });
+    res.json(enrollments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.enroll = async (req, res) => {
   const { class_id } = req.body;
   try {

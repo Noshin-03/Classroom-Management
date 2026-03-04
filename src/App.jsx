@@ -7,10 +7,13 @@ import Departments from "./pages/departments/Departments";
 import Subjects from "./pages/subjects/Subjects";
 import Faculty from "./pages/faculty/Faculty";
 import Classes from "./pages/classes/Classes";
+import ClassDetail from "./pages/classes/ClassDetail";
+import AssignmentCreate from "./pages/classes/AssignmentCreate";
+import AssignmentDetail from "./pages/classes/AssignmentDetail";
 import Enrollments from "./pages/enrollments/Enrollments";
+import Profile from "./pages/profile/Profile";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
-import ClassDetail from "./pages/classes/ClassDetail";
 
 function ProtectedLayout({ children, title, subtitle }) {
   const token = localStorage.getItem("token");
@@ -59,14 +62,29 @@ export default function App() {
               <Classes />
             </ProtectedLayout>
           } />
+          <Route path="/class/:id" element={
+            <ProtectedLayout title="Class" subtitle="">
+              <ClassDetail />
+            </ProtectedLayout>
+          } />
+          <Route path="/class/:id/create-assignment" element={
+            <ProtectedLayout title="Create Assignment" subtitle="Add a new assignment to this class.">
+              <AssignmentCreate />
+            </ProtectedLayout>
+          } />
+          <Route path="/assignment/:id" element={
+            <ProtectedLayout title="Assignment" subtitle="">
+              <AssignmentDetail />
+            </ProtectedLayout>
+          } />
           <Route path="/enrollments" element={
             <ProtectedLayout title="Enrollments" subtitle="Manage student enrollments.">
               <Enrollments />
             </ProtectedLayout>
           } />
-          <Route path="/classes/:id" element={
-            <ProtectedLayout title="Class Detail" subtitle="View class details, announcements and assignments.">
-              <ClassDetail />
+          <Route path="/profile" element={
+            <ProtectedLayout title="Profile" subtitle="Manage your account settings.">
+              <Profile />
             </ProtectedLayout>
           } />
         </Routes>

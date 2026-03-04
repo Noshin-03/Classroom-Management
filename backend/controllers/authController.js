@@ -80,3 +80,30 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  const { name, email } = req.body;
+  try {
+    const user = await User.findByPk(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    await user.update({ name, email });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const user = await User.findByPk(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) return res.status(401).json({ message: 'Current password is incorrect' });
+    const hash = await bcrypt.hash(newPassword, 10);
+    await user.update({ password: hash });
+    res.json({ message: 'Password updated' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

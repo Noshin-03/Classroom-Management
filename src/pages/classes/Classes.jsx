@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiPost } from "../../api/api";
 import { useNavigate } from "react-router-dom";
+import { apiGet, apiPost } from "../../api/api";
 
 export default function Classes() {
+  const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [search, setSearch] = useState("");
@@ -12,7 +13,6 @@ export default function Classes() {
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(true);
   const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadClasses();
@@ -169,7 +169,7 @@ export default function Classes() {
             ) : filtered.length === 0 ? (
               <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>No classes found</td></tr>
             ) : filtered.map(c => (
-              <tr key={c.id}>
+              <tr key={c.id} onClick={() => navigate(`/class/${c.id}`)} style={{ cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                 <td style={{ fontWeight: 500 }}>{c.name}</td>
                 <td><span className="badge">{c.Subject?.code || "-"}</span></td>
                 <td style={{ color: "var(--text-muted)" }}>{c.Subject?.Department?.name || "-"}</td>
