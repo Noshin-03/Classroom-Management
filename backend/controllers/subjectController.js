@@ -22,7 +22,7 @@ exports.create = async (req, res) => {
     let assignedTeacherId = null;
 
     if (requester?.role === 'admin') {
-      assignedTeacherId = teacher_id || null;
+      assignedTeacherId = teacher_id ? Number(teacher_id) : null;
     }
 
     if (assignedTeacherId) {
@@ -81,7 +81,7 @@ exports.update = async (req, res) => {
     }
 
     if (Object.prototype.hasOwnProperty.call(payload, 'teacher_id')) {
-      const canManageTeacher = requester?.role === 'admin' || subject.teacher_id === req.userId;
+      const canManageTeacher = requester?.role === 'admin' || Number(subject.teacher_id) === Number(req.userId);
       if (!canManageTeacher) {
         return res.status(403).json({ message: 'Only admin or currently assigned teacher can update teacher assignment' });
       }
@@ -90,7 +90,8 @@ exports.update = async (req, res) => {
       if (teacherId === null || teacherId === '') {
         payload.teacher_id = null;
       } else {
-        const teacher = await User.findOne({ where: { id: teacherId, role: 'teacher' } });
+        payload.teacher_id = Number(teacherId);
+        const teacher = await User.findOne({ where: { id: payload.teacher_id, role: 'teacher' } });
         if (!teacher) {
           return res.status(400).json({ message: 'Invalid teacher selected' });
         }
@@ -98,7 +99,14 @@ exports.update = async (req, res) => {
     }
 
     await Subject.update(payload, { where: { id: req.params.id } });
-    res.json({ message: 'Updated' });
+    const updated = await Subject.findByPk(req.params.id, {
+      include: [
+        { model: Department, attributes: ['id', 'name', 'code'] },
+        { model: User, attributes: ['id', 'name', 'email'] }
+      ]
+    });
+
+    res.json({ message: 'Updated', subject: updated });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

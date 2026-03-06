@@ -42,7 +42,7 @@ export default function SubjectDetail() {
     }
   }
 
-  const canManageTeacher = loggedUser.role === "admin" || Number(subject?.teacher_id) === Number(loggedUser.id);
+  const canManageTeacher = loggedUser.role === "admin" || subject?.teacher_id === loggedUser.id;
 
   function openAssignModal() {
     setSelectedTeacherId(subject?.teacher_id ? String(subject.teacher_id) : "");
@@ -57,7 +57,16 @@ export default function SubjectDetail() {
       });
 
       if (result.message === "Updated") {
-        await loadSubject();
+        if (result.subject?.id) {
+          setSubject(prev => ({
+            ...(prev || {}),
+            ...result.subject,
+            Classes: prev?.Classes || [],
+            classCount: prev?.classCount || 0
+          }));
+        } else {
+          await loadSubject();
+        }
         setShowAssignModal(false);
         return;
       }
@@ -75,7 +84,16 @@ export default function SubjectDetail() {
       setSavingTeacher(true);
       const result = await apiPut(`/api/subjects/${id}`, { teacher_id: null });
       if (result.message === "Updated") {
-        await loadSubject();
+        if (result.subject?.id) {
+          setSubject(prev => ({
+            ...(prev || {}),
+            ...result.subject,
+            Classes: prev?.Classes || [],
+            classCount: prev?.classCount || 0
+          }));
+        } else {
+          await loadSubject();
+        }
         return;
       }
       alert(result.message || "Failed to remove teacher");
@@ -127,7 +145,7 @@ export default function SubjectDetail() {
                 {subject.User ? "Reassign" : "Assign"}
               </button>
               {subject.User && (
-                <button className="btn btn-outline" style={{ padding: "8px 12px", fontSize: "0.8rem" }} onClick={handleRemoveTeacher} disabled={savingTeacher}>
+                <button className="btn btn-outline" style={{ padding: "8px 12px", fontSize: "0.8rem" }} onClick={handleRemoveTeacher}>
                   Remove
                 </button>
               )}
@@ -159,7 +177,7 @@ export default function SubjectDetail() {
               </select>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-              <button className="btn btn-outline" onClick={() => setShowAssignModal(false)} disabled={savingTeacher}>Cancel</button>
+              <button className="btn btn-outline" onClick={() => setShowAssignModal(false)}>Cancel</button>
               <button className="btn btn-primary" onClick={handleSaveTeacher} disabled={savingTeacher}>
                 {savingTeacher ? "Saving..." : "Save"}
               </button>

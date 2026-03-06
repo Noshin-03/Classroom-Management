@@ -55,7 +55,7 @@ export default function Subjects() {
     if (!form.code || !form.name || !form.department_id) return alert("Code, name and department are required");
     const payload = {
       ...form,
-      teacher_id: form.teacher_id || undefined
+      teacher_id: form.teacher_id ? Number(form.teacher_id) : undefined
     };
     const data = await apiPost("/api/subjects", payload);
     if (data.id) {
