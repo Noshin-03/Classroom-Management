@@ -2,35 +2,14 @@ const { Class, Subject, Department, Enrollment } = require('../models');
 
 exports.getAll = async (req, res) => {
   try {
-    let classes;
-
-    const { User } = require('../models');
-    const user = await User.findByPk(req.userId);
-
-    if (user.role === 'teacher') {
-      classes = await Class.findAll({
-        where: { teacher_id: req.userId },
-        include: [{
-          model: Subject,
-          attributes: ['id', 'name', 'code'],
-          include: [{ model: Department, attributes: ['id', 'name'] }]
-        }],
-        order: [['createdAt', 'DESC']]
-      });
-    } else {
-      const enrollments = await Enrollment.findAll({
-        where: { student_id: req.userId },
-        include: [{
-          model: Class,
-          include: [{
-            model: Subject,
-            attributes: ['id', 'name', 'code'],
-            include: [{ model: Department, attributes: ['id', 'name'] }]
-          }]
-        }]
-      });
-      classes = enrollments.map(e => e.Class);
-    }
+    const classes = await Class.findAll({
+      include: [{
+        model: Subject,
+        attributes: ['id', 'name', 'code'],
+        include: [{ model: Department, attributes: ['id', 'name'] }]
+      }],
+      order: [['createdAt', 'DESC']]
+    });
 
     const result = await Promise.all(classes.map(async c => {
       const studentCount = await Enrollment.count({ where: { class_id: c.id } });
@@ -46,13 +25,35 @@ exports.getAll = async (req, res) => {
 exports.create = async (req, res) => {
   const { name, subject_id } = req.body;
   try {
+    const { User } = require('../models');
+    const requester = await User.findByPk(req.userId);
+    const subject = await Subject.findByPk(subject_id);
+
+    if (!subject) {
+      return res.status(404).json({ message: 'Subject not found' });
+    }
+
+    const canCreate = requester?.role === 'admin' || subject.teacher_id === req.userId;
+    if (!canCreate) {
+      return res.status(403).json({ message: 'Only admin or assigned subject teacher can create classes' });
+    }
+
+    if (!subject.teacher_id) {
+      return res.status(400).json({ message: 'Assign a teacher to this subject before creating classes' });
+    }
+
     let join_code;
     let exists = true;
     while (exists) {
       join_code = Math.random().toString(36).substring(2, 8).toUpperCase();
       exists = await Class.findOne({ where: { join_code } });
     }
-    const cls = await Class.create({ name, subject_id, join_code, teacher_id: req.userId });
+    const cls = await Class.create({
+      name,
+      subject_id,
+      join_code,
+      teacher_id: subject.teacher_id
+    });
     res.json(cls);
   } catch (err) {
     res.status(500).json({ message: err.message });

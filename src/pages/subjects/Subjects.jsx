@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../../api/api";
 
 export default function Subjects() {
+  const navigate = useNavigate();
   const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [search, setSearch] = useState("");
   const [filterDept, setFilterDept] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ code: "", name: "", description: "", department_id: "" });
+  const [form, setForm] = useState({ code: "", name: "", description: "", department_id: "", teacher_id: "" });
   const [loading, setLoading] = useState(true);
   const loggedUser = JSON.parse(localStorage.getItem("loggedUser") || "{}");
+  const canManageSubjects = loggedUser.role === "teacher" || loggedUser.role === "admin";
+  const isAdmin = loggedUser.role === "admin";
 
   useEffect(() => {
     loadSubjects();
     loadDepartments();
+    loadTeachers();
   }, []);
 
   async function loadSubjects() {
@@ -36,12 +42,25 @@ export default function Subjects() {
     }
   }
 
+  async function loadTeachers() {
+    try {
+      const data = await apiGet("/api/faculty");
+      setTeachers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   async function handleCreate() {
     if (!form.code || !form.name || !form.department_id) return alert("Code, name and department are required");
-    const data = await apiPost("/api/subjects", form);
+    const payload = {
+      ...form,
+      teacher_id: form.teacher_id || undefined
+    };
+    const data = await apiPost("/api/subjects", payload);
     if (data.id) {
       setShowForm(false);
-      setForm({ code: "", name: "", description: "", department_id: "" });
+      setForm({ code: "", name: "", description: "", department_id: "", teacher_id: "" });
       loadSubjects();
     } else {
       alert(data.message || "Failed to create");
@@ -80,7 +99,7 @@ export default function Subjects() {
             ))}
           </select>
         </div>
-        {loggedUser.role === "teacher" && (
+        {canManageSubjects && (
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             + Create
           </button>
@@ -116,6 +135,17 @@ export default function Subjects() {
               <label className="form-label">Description</label>
               <input className="form-input" placeholder="Brief description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
             </div>
+            {isAdmin && (
+              <div className="form-group">
+                <label className="form-label">Assigned Teacher</label>
+                <select className="form-input" value={form.teacher_id} onChange={e => setForm({ ...form, teacher_id: e.target.value })}>
+                  <option value="">Select Teacher</option>
+                  {teachers.map(t => (
+                    <option key={t.id} value={t.id}>{t.name} ({t.email})</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 8 }}>
               <button className="btn btn-outline" onClick={() => setShowForm(false)}>Cancel</button>
               <button className="btn btn-primary" onClick={handleCreate}>Create</button>
@@ -132,15 +162,16 @@ export default function Subjects() {
               <th>Code</th>
               <th>Name</th>
               <th>Department</th>
+              <th>Teacher</th>
               <th>Description</th>
               <th>Details</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>No subjects found</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)" }}>No subjects found</td></tr>
             ) : filtered.map(s => (
               <tr key={s.id}>
                 <td><span className="badge">{s.code}</span></td>
@@ -156,8 +187,17 @@ export default function Subjects() {
                     {s.Department?.name || "-"}
                   </span>
                 </td>
+                <td style={{ color: "var(--text-muted)" }}>{s.User?.name || "Not assigned"}</td>
                 <td style={{ color: "var(--text-muted)" }}>{s.description}</td>
-                <td><button className="btn btn-outline" style={{ padding: "6px 14px", fontSize: "0.8rem" }}>View</button></td>
+                <td>
+                  <button
+                    className="btn btn-outline"
+                    style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+                    onClick={() => navigate(`/subjects/${s.id}`)}
+                  >
+                    View
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

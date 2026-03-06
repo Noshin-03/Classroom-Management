@@ -1,6 +1,7 @@
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar({ title, subtitle }) {
   const { dark, setDark } = useTheme();
@@ -35,6 +36,8 @@ export default function Navbar({ title, subtitle }) {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <NotificationBell />
+
         {/* Theme Toggle */}
         <button
           onClick={() => setDark(!dark)}

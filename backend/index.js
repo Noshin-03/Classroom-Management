@@ -17,6 +17,7 @@ app.use('/api/faculty', require('./routes/faculty'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/submissions', require('./routes/submissions'));
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/uploads', express.static('uploads'));
 
 app.get('/', (req, res) => {

@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Announcement, { foreignKey: 'teacher_id' });
       User.hasMany(models.Assignment, { foreignKey: 'teacher_id' });
       User.hasMany(models.Submission, { foreignKey: 'student_id' });
+      User.hasMany(models.Notification, { foreignKey: 'user_id' });
     }
   }
   User.init({

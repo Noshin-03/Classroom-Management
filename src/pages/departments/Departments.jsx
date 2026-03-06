@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../../api/api";
 
 export default function Departments() {
+  const navigate = useNavigate();
   const [departments, setDepartments] = useState([]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -96,22 +98,41 @@ export default function Departments() {
               <th>Code</th>
               <th>Name</th>
               <th>Subjects</th>
+              <th>Teachers</th>
               <th>Description</th>
               <th>Details</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>No departments found</td></tr>
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)" }}>No departments found</td></tr>
             ) : filtered.map(d => (
               <tr key={d.id}>
                 <td><span className="badge">{d.code}</span></td>
                 <td style={{ fontWeight: 500 }}>{d.name}</td>
                 <td>{d.subjectCount || 0}</td>
+                <td style={{ color: "var(--text-muted)", maxWidth: 260 }}>
+                  {d.teacherCount ? (
+                    <>
+                      <span style={{ color: "var(--text)" }}>{d.teacherCount}</span>
+                      {d.teachers?.length > 0 && (
+                        <span> • {d.teachers.slice(0, 2).map(t => t.name).join(", ")}{d.teachers.length > 2 ? "…" : ""}</span>
+                      )}
+                    </>
+                  ) : "Not assigned"}
+                </td>
                 <td style={{ color: "var(--text-muted)" }}>{d.description}</td>
-                <td><button className="btn btn-outline" style={{ padding: "6px 14px", fontSize: "0.8rem" }}>View</button></td>
+                <td>
+                  <button
+                    className="btn btn-outline"
+                    style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+                    onClick={() => navigate(`/departments/${d.id}`)}
+                  >
+                    View
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

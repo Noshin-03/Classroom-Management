@@ -161,13 +161,14 @@ export default function Classes() {
               <th>Department</th>
               {loggedUser.role === 'teacher' && <th>Join Code</th>}
               <th>Students</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
+              <tr><td colSpan={loggedUser.role === 'teacher' ? 6 : 5} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>No classes found</td></tr>
+              <tr><td colSpan={loggedUser.role === 'teacher' ? 6 : 5} style={{ textAlign: "center", color: "var(--text-muted)" }}>No classes found</td></tr>
             ) : filtered.map(c => (
               <tr key={c.id} onClick={() => navigate(`/class/${c.id}`)} style={{ cursor: "pointer", transition: "background 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                 <td style={{ fontWeight: 500 }}>{c.name}</td>
@@ -191,16 +192,19 @@ export default function Classes() {
                   ) : "-"}
                 </td>
                 )}
+                <td>{c.studentCount || 0}</td>
                 <td>
-                  <button 
-                    className="btn btn-outline" 
+                  <button
+                    className="btn btn-outline"
                     style={{ padding: "6px 14px", fontSize: "0.8rem" }}
-                    onClick={() => navigate(`/class/${c.id}`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/class/${c.id}`);
+                    }}
                   >
                     View
                   </button>
                 </td>
-                <td>{c.studentCount || 0}</td>
               </tr>
             ))}
           </tbody>

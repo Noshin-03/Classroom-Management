@@ -19,6 +19,17 @@ exports.create = async (req, res) => {
     const assignment = await Assignment.create({
       title, description, due_date, points, class_id, teacher_id: req.userId
     });
+    const { Enrollment, Notification } = require('../models');
+    const enrollments = await Enrollment.findAll({ where: { class_id } });
+    await Promise.all(enrollments.map(e =>
+      Notification.create({
+        message: `New assignment: ${title}`,
+        is_read: false,
+        user_id: e.student_id,
+        type: 'assignment',
+        reference_id: assignment.id
+      })
+    ));
     res.json(assignment);
   } catch (err) {
     res.status(500).json({ message: err.message });

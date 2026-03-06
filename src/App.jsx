@@ -4,7 +4,9 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Departments from "./pages/departments/Departments";
+import DepartmentDetail from "./pages/departments/DepartmentDetail";
 import Subjects from "./pages/subjects/Subjects";
+import SubjectDetail from "./pages/subjects/SubjectDetail";
 import Faculty from "./pages/faculty/Faculty";
 import Classes from "./pages/classes/Classes";
 import ClassDetail from "./pages/classes/ClassDetail";
@@ -47,9 +49,19 @@ export default function App() {
               <Departments />
             </ProtectedLayout>
           } />
+          <Route path="/departments/:id" element={
+            <ProtectedLayout title="Department Details" subtitle="View department subjects and classes.">
+              <DepartmentDetail />
+            </ProtectedLayout>
+          } />
           <Route path="/subjects" element={
             <ProtectedLayout title="Subjects" subtitle="Quick access to essential metrics and management tools.">
               <Subjects />
+            </ProtectedLayout>
+          } />
+          <Route path="/subjects/:id" element={
+            <ProtectedLayout title="Subject Details" subtitle="View assigned teacher and classrooms.">
+              <SubjectDetail />
             </ProtectedLayout>
           } />
           <Route path="/faculty" element={
