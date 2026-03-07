@@ -120,8 +120,8 @@ chmod +x run-frontend.sh
 
 Backend:
 ```bash
-chmod +x run-backend.sh
-./run-backend.sh
+cd backend
+nodemon index.js
 ```
 
 ### Option 2: Manual commands
