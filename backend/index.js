@@ -15,6 +15,7 @@ app.use('/api/classes', require('./routes/classes'));
 app.use('/api/enrollments', require('./routes/enrollments'));
 app.use('/api/faculty', require('./routes/faculty'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/submissions', require('./routes/submissions'));
 app.use('/api/notifications', require('./routes/notifications'));

@@ -41,26 +41,30 @@ export default function Classes() {
 
   async function handleCreate() {
     if (!form.name || !form.subject_id) return alert("Name and subject are required");
-    const data = await apiPost("/api/classes", form);
-    if (data.id) {
-      setShowForm(false);
-      setForm({ name: "", subject_id: "" });
-      loadClasses();
-    } else {
-      alert(data.message || "Failed to create");
+    try {
+      const data = await apiPost("/api/classes", form);
+      if (data.id) {
+        setShowForm(false);
+        setForm({ name: "", subject_id: "" });
+        loadClasses();
+      }
+    } catch (err) {
+      alert(err.message || "Failed to create");
     }
   }
 
   async function handleJoin() {
     if (!joinCode) return alert("Please enter a join code");
-    const data = await apiPost("/api/classes/join", { join_code: joinCode.toUpperCase() });
-    if (data.message === "Joined successfully") {
-      alert("Joined successfully!");
-      setShowJoinForm(false);
-      setJoinCode("");
-      loadClasses();
-    } else {
-      alert(data.message || "Failed to join");
+    try {
+      const data = await apiPost("/api/classes/join", { join_code: joinCode.toUpperCase() });
+      if (data.message === "Joined successfully") {
+        alert("Joined successfully!");
+        setShowJoinForm(false);
+        setJoinCode("");
+        loadClasses();
+      }
+    } catch (err) {
+      alert(err.message || "Failed to join");
     }
   }
 
@@ -192,7 +196,7 @@ export default function Classes() {
                   ) : "-"}
                 </td>
                 )}
-                <td>{c.studentCount || 0}</td>
+                <td>{c.studentCount || 0}/30</td>
                 <td>
                   <button
                     className="btn btn-outline"

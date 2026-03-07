@@ -13,6 +13,7 @@ export default function ClassDetail() {
   const [enrollments, setEnrollments] = useState([]);
   const [activeTab, setActiveTab] = useState("stream");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [showAnnouncementForm, setShowAnnouncementForm] = useState(false);
   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
@@ -25,20 +26,23 @@ export default function ClassDetail() {
 
   async function loadAll() {
     try {
-      const [clsData, assData, enrollData] = await Promise.all([
+      const [clsData, annData, assData, enrollData] = await Promise.all([
         apiGet(`/api/classes/${id}`),
+        apiGet(`/api/announcements/class/${id}`),
         apiGet(`/api/assignments/class/${id}`),
         apiGet(`/api/enrollments/class/${id}`),
       ]);
       setCls(clsData);
+      setAnnouncements(Array.isArray(annData) ? annData : []);
       setAssignments(Array.isArray(assData) ? assData : []);
       setEnrollments(enrollData || []);
-      
-      // Load announcements from localStorage (not persisted to backend yet)
-      const stored = localStorage.getItem(`announcements_${id}`);
-      setAnnouncements(stored ? JSON.parse(stored) : []);
     } catch (err) {
       console.error(err);
+      if (err.message.includes('enroll and join this class with code') || err.message.includes('join this class first')) {
+        setError('You must enroll and then join this class with a code before viewing its details.');
+      } else {
+        setError('Failed to load class details.');
+      }
     } finally {
       setLoading(false);
     }
@@ -46,39 +50,45 @@ export default function ClassDetail() {
 
   async function handleCreateAnnouncement() {
     if (!announcementForm.title || !announcementForm.content) return alert("Fill all fields");
-    
-    const newAnnouncement = {
-      id: Date.now(),
-      title: announcementForm.title,
-      content: announcementForm.content,
-      author: loggedUser.name,
-      createdAt: new Date().toISOString()
-    };
-    
-    const updated = [newAnnouncement, ...announcements];
-    localStorage.setItem(`announcements_${id}`, JSON.stringify(updated));
-    setAnnouncements(updated);
-    setShowAnnouncementForm(false);
-    setAnnouncementForm({ title: "", content: "" });
+
+    try {
+      const data = await apiPost("/api/announcements", {
+        ...announcementForm,
+        class_id: id,
+      });
+
+      if (data.id) {
+        setShowAnnouncementForm(false);
+        setAnnouncementForm({ title: "", content: "" });
+        loadAll();
+      }
+    } catch (err) {
+      alert(err.message || "Failed to create announcement");
+    }
   }
 
   async function handleCreateAssignment() {
     if (!assignmentForm.title) return alert("Title is required");
-    const data = await apiPost("/api/assignments", { ...assignmentForm, class_id: id });
-    if (data.id) {
-      setShowAssignmentForm(false);
-      setAssignmentForm({ title: "", description: "", due_date: "", points: 100 });
-      loadAll();
-    } else {
-      alert(data.message || "Failed");
+    try {
+      const data = await apiPost("/api/assignments", { ...assignmentForm, class_id: id });
+      if (data.id) {
+        setShowAssignmentForm(false);
+        setAssignmentForm({ title: "", description: "", due_date: "", points: 100 });
+        loadAll();
+      }
+    } catch (err) {
+      alert(err.message || "Failed to create assignment");
     }
   }
 
   async function handleDeleteAnnouncement(annId) {
     if (!window.confirm("Delete this announcement?")) return;
-    const updated = announcements.filter(a => a.id !== annId);
-    localStorage.setItem(`announcements_${id}`, JSON.stringify(updated));
-    setAnnouncements(updated);
+    try {
+      await apiDelete(`/api/announcements/${annId}`);
+      loadAll();
+    } catch (err) {
+      alert(err.message || "Failed to delete announcement");
+    }
   }
 
   async function handleDeleteAssignment(assId) {
@@ -88,6 +98,21 @@ export default function ClassDetail() {
   }
 
   if (loading) return <div style={{ color: "var(--text-muted)" }}>Loading...</div>;
+  if (error) return (
+    <div className="card" style={{ textAlign: "center", padding: 40 }}>
+      <div style={{ fontSize: "3rem", marginBottom: 16 }}>🔒</div>
+      <h3 style={{ marginBottom: 8 }}>{error}</h3>
+      <p style={{ color: "var(--text-muted)", marginBottom: 20 }}>
+        Please ask your teacher for the class join code.
+      </p>
+      <button 
+        className="btn btn-primary" 
+        onClick={() => navigate("/classes")}
+      >
+        Back to Classes
+      </button>
+    </div>
+  );
   if (!cls) return <div style={{ color: "var(--text-muted)" }}>Class not found</div>;
 
   const tabs = ["stream", "assignments", "people"];

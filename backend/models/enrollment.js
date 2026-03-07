@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   Enrollment.init({
     student_id: DataTypes.INTEGER,
-    class_id: DataTypes.INTEGER
+    class_id: DataTypes.INTEGER,
+    joined_at: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Enrollment',

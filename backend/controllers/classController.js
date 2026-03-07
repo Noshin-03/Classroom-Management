@@ -1,8 +1,24 @@
 const { Class, Subject, Department, Enrollment } = require('../models');
 
+const MAX_CLASS_SIZE = 30;
+
 exports.getAll = async (req, res) => {
   try {
+    const { User } = require('../models');
+    const requester = await User.findByPk(req.userId);
+    
+    // Build query conditions
+    let whereClause = {};
+    
+    // Teachers only see their assigned classes
+    if (requester?.role === 'teacher') {
+      whereClause.teacher_id = req.userId;
+    }
+    // Students see all classes (but will only access enrolled ones)
+    // Admins see all classes
+    
     const classes = await Class.findAll({
+      where: whereClause,
       include: [{
         model: Subject,
         attributes: ['id', 'name', 'code'],
@@ -13,7 +29,14 @@ exports.getAll = async (req, res) => {
 
     const result = await Promise.all(classes.map(async c => {
       const studentCount = await Enrollment.count({ where: { class_id: c.id } });
-      return { ...c.toJSON(), studentCount };
+      const classData = c.toJSON();
+      
+      // Only hide join_code from students (teachers and admins can see it)
+      if (requester?.role === 'student') {
+        delete classData.join_code;
+      }
+      
+      return { ...classData, studentCount };
     }));
 
     res.json(result);
@@ -62,6 +85,9 @@ exports.create = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
+    const { User } = require('../models');
+    const requester = await User.findByPk(req.userId);
+    
     const cls = await Class.findByPk(req.params.id, {
       include: [{ 
         model: Subject, 
@@ -72,7 +98,27 @@ exports.getById = async (req, res) => {
       }]
     });
     if (!cls) return res.status(404).json({ message: 'Not found' });
-    res.json(cls);
+    
+    // Check access permissions
+    if (requester?.role === 'student') {
+      // Students must enroll and then join with code before viewing details
+      const enrollment = await Enrollment.findOne({
+        where: { student_id: req.userId, class_id: cls.id }
+      });
+      if (!enrollment || !enrollment.joined_at) {
+        return res.status(403).json({ message: 'You must enroll and join this class with code first' });
+      }
+    } else if (requester?.role === 'teacher' && cls.teacher_id !== req.userId) {
+      return res.status(403).json({ message: 'You can only access your assigned classes' });
+    }
+    
+    const classData = cls.toJSON();
+    // Only hide join_code from students (teachers and admins can see it)
+    if (requester?.role === 'student') {
+      delete classData.join_code;
+    }
+    
+    res.json(classData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -90,16 +136,41 @@ exports.remove = async (req, res) => {
 exports.joinByCode = async (req, res) => {
   const { join_code } = req.body;
   try {
-    const cls = await Class.findOne({ where: { join_code } });
+    const { User } = require('../models');
+    const requester = await User.findByPk(req.userId);
+    if (requester?.role !== 'student') {
+      return res.status(403).json({ message: 'Only students can join a class' });
+    }
+
+    const cls = await Class.findOne({ 
+      where: { join_code },
+      include: [{ model: Subject }]
+    });
     if (!cls) return res.status(404).json({ message: 'Invalid join code' });
 
-    const existing = await Enrollment.findOne({ 
+    const enrollment = await Enrollment.findOne({ 
       where: { student_id: req.userId, class_id: cls.id } 
     });
-    if (existing) return res.status(400).json({ message: 'Already enrolled' });
+    if (!enrollment) {
+      return res.status(403).json({ message: 'You must enroll first before joining with code' });
+    }
+    if (enrollment.joined_at) {
+      return res.status(400).json({ message: 'Already joined this class' });
+    }
+    
+    // Check enrollment limit (30 students max)
+    const enrollmentCount = await Enrollment.count({ where: { class_id: cls.id } });
+    if (enrollmentCount >= MAX_CLASS_SIZE) {
+      return res.status(400).json({ message: `Class is full (maximum ${MAX_CLASS_SIZE} students)` });
+    }
 
-    await Enrollment.create({ student_id: req.userId, class_id: cls.id });
-    res.json({ message: 'Joined successfully', class: cls });
+    await enrollment.update({ joined_at: new Date() });
+    
+    // Remove join_code from response for students
+    const classData = cls.toJSON();
+    delete classData.join_code;
+    
+    res.json({ message: 'Joined successfully', class: classData });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -37,13 +37,16 @@ export default function Enrollments() {
 
   async function handleEnroll() {
     if (!form.class_id) return alert("Please select a class");
-    const data = await apiPost("/api/enrollments", { class_id: form.class_id });
-    if (data.id) {
-      setShowForm(false);
-      setForm({ class_id: "" });
-      loadEnrollments();
-    } else {
-      alert(data.message || "Failed to enroll");
+    try {
+      const data = await apiPost("/api/enrollments", { class_id: form.class_id });
+      if (data.id) {
+        setShowForm(false);
+        setForm({ class_id: "" });
+        alert("Enrollment successful. Now go to Classes and join with the class code.");
+        loadEnrollments();
+      }
+    } catch (err) {
+      alert(err.message || "Failed to enroll");
     }
   }
 
@@ -99,14 +102,15 @@ export default function Enrollments() {
               <th>Student</th>
               <th>Class</th>
               <th>Subject</th>
+              <th>Status</th>
               <th>Enrolled At</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--text-muted)" }}>No enrollments found</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--text-muted)" }}>No enrollments found</td></tr>
             ) : filtered.map(e => (
               <tr key={e.id}>
                 <td>
@@ -124,6 +128,11 @@ export default function Enrollments() {
                 </td>
                 <td style={{ fontWeight: 500 }}>{e.Class?.name}</td>
                 <td><span className="badge">{e.Class?.Subject?.code || "-"}</span></td>
+                <td>
+                  <span className="badge" style={{ background: e.joined_at ? "#e8f7ee" : "#fff4e5", color: e.joined_at ? "#0f7a2f" : "#9a6700" }}>
+                    {e.joined_at ? "Joined" : "Enrolled (Awaiting code join)"}
+                  </span>
+                </td>
                 <td style={{ color: "var(--text-muted)" }}>
                   {new Date(e.createdAt).toLocaleDateString()}
                 </td>

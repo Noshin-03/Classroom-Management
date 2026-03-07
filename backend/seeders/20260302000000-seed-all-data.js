@@ -206,6 +206,8 @@ module.exports = {
         id: 1,
         name: 'CS101 - Section A',
         subject_id: 1,
+        teacher_id: 2,
+        join_code: 'CLS001',
         createdAt: now,
         updatedAt: now
       },
@@ -213,6 +215,8 @@ module.exports = {
         id: 2,
         name: 'CS101 - Section B',
         subject_id: 1,
+        teacher_id: 2,
+        join_code: 'CLS002',
         createdAt: now,
         updatedAt: now
       },
@@ -220,6 +224,8 @@ module.exports = {
         id: 3,
         name: 'CS201 - Section A',
         subject_id: 2,
+        teacher_id: 2,
+        join_code: 'CLS003',
         createdAt: now,
         updatedAt: now
       },
@@ -227,6 +233,8 @@ module.exports = {
         id: 4,
         name: 'CS301 - Section A',
         subject_id: 3,
+        teacher_id: 3,
+        join_code: 'CLS004',
         createdAt: now,
         updatedAt: now
       },
@@ -234,6 +242,8 @@ module.exports = {
         id: 5,
         name: 'MATH101 - Section A',
         subject_id: 4,
+        teacher_id: 4,
+        join_code: 'CLS005',
         createdAt: now,
         updatedAt: now
       },
@@ -241,6 +251,8 @@ module.exports = {
         id: 6,
         name: 'MATH201 - Section A',
         subject_id: 5,
+        teacher_id: 4,
+        join_code: 'CLS006',
         createdAt: now,
         updatedAt: now
       },
@@ -248,35 +260,37 @@ module.exports = {
         id: 7,
         name: 'PHY101 - Section A',
         subject_id: 6,
+        teacher_id: 3,
+        join_code: 'CLS007',
         createdAt: now,
         updatedAt: now
       }
     ], {});
 
     await queryInterface.bulkInsert('Enrollments', [
-      { id: 1, student_id: 5, class_id: 1, createdAt: now, updatedAt: now },
-      { id: 2, student_id: 5, class_id: 3, createdAt: now, updatedAt: now },
-      { id: 3, student_id: 5, class_id: 5, createdAt: now, updatedAt: now },
+      { id: 1, student_id: 5, class_id: 1, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 2, student_id: 5, class_id: 3, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 3, student_id: 5, class_id: 5, joined_at: now, createdAt: now, updatedAt: now },
       
-      { id: 4, student_id: 6, class_id: 2, createdAt: now, updatedAt: now },
-      { id: 5, student_id: 6, class_id: 4, createdAt: now, updatedAt: now },
-      { id: 6, student_id: 6, class_id: 7, createdAt: now, updatedAt: now },
+      { id: 4, student_id: 6, class_id: 2, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 5, student_id: 6, class_id: 4, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 6, student_id: 6, class_id: 7, joined_at: now, createdAt: now, updatedAt: now },
       
-      { id: 7, student_id: 7, class_id: 1, createdAt: now, updatedAt: now },
-      { id: 8, student_id: 7, class_id: 5, createdAt: now, updatedAt: now },
-      { id: 9, student_id: 7, class_id: 6, createdAt: now, updatedAt: now },
+      { id: 7, student_id: 7, class_id: 1, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 8, student_id: 7, class_id: 5, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 9, student_id: 7, class_id: 6, joined_at: now, createdAt: now, updatedAt: now },
       
-      { id: 10, student_id: 8, class_id: 2, createdAt: now, updatedAt: now },
-      { id: 11, student_id: 8, class_id: 3, createdAt: now, updatedAt: now },
-      { id: 12, student_id: 8, class_id: 7, createdAt: now, updatedAt: now },
+      { id: 10, student_id: 8, class_id: 2, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 11, student_id: 8, class_id: 3, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 12, student_id: 8, class_id: 7, joined_at: now, createdAt: now, updatedAt: now },
       
-      { id: 13, student_id: 9, class_id: 1, createdAt: now, updatedAt: now },
-      { id: 14, student_id: 9, class_id: 4, createdAt: now, updatedAt: now },
-      { id: 15, student_id: 9, class_id: 5, createdAt: now, updatedAt: now },
+      { id: 13, student_id: 9, class_id: 1, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 14, student_id: 9, class_id: 4, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 15, student_id: 9, class_id: 5, joined_at: now, createdAt: now, updatedAt: now },
       
-      { id: 16, student_id: 10, class_id: 2, createdAt: now, updatedAt: now },
-      { id: 17, student_id: 10, class_id: 6, createdAt: now, updatedAt: now },
-      { id: 18, student_id: 10, class_id: 7, createdAt: now, updatedAt: now }
+      { id: 16, student_id: 10, class_id: 2, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 17, student_id: 10, class_id: 6, joined_at: now, createdAt: now, updatedAt: now },
+      { id: 18, student_id: 10, class_id: 7, joined_at: now, createdAt: now, updatedAt: now }
     ], {});
   },
 

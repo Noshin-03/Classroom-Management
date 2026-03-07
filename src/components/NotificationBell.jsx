@@ -40,6 +40,7 @@ export default function NotificationBell() {
     await apiPut(`/api/notifications/${notification.id}/read`);
     setOpen(false);
     if (notification.type === "assignment") navigate(`/assignment/${notification.reference_id}`);
+    if (notification.type === "announcement") navigate(`/class/${notification.reference_id}`);
     loadNotifications();
   }
 
@@ -107,7 +108,7 @@ export default function NotificationBell() {
                 }}
               >
                 <span style={{ fontSize: "1.1rem" }}>
-                  {n.type === "assignment" ? "📝" : "⭐"}
+                  {n.type === "assignment" ? "📝" : n.type === "announcement" ? "📢" : "⭐"}
                 </span>
                 <div>
                   <p style={{ fontSize: "0.85rem", marginBottom: 4, color: "var(--text)" }}>{n.message}</p>

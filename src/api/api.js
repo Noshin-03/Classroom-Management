@@ -8,7 +8,11 @@ export async function apiGet(endpoint) {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     headers: { "Authorization": `Bearer ${getToken()}` }
   });
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || 'Request failed');
+  }
+  return data;
 }
 
 export async function apiPost(endpoint, data) {
@@ -20,7 +24,11 @@ export async function apiPost(endpoint, data) {
     },
     body: JSON.stringify(data),
   });
-  return res.json();
+  const responseData = await res.json();
+  if (!res.ok) {
+    throw new Error(responseData.message || 'Request failed');
+  }
+  return responseData;
 }
 
 export async function apiPut(endpoint, data) {
@@ -32,12 +40,21 @@ export async function apiPut(endpoint, data) {
     },
     body: JSON.stringify(data),
   });
-  return res.json();
+  const responseData = await res.json();
+  if (!res.ok) {
+    throw new Error(responseData.message || 'Request failed');
+  }
+  return responseData;
 }
 
 export async function apiDelete(endpoint) {
-  return fetch(`${BASE_URL}${endpoint}`, {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "DELETE",
     headers: { "Authorization": `Bearer ${getToken()}` }
   });
+  const responseData = await res.json();
+  if (!res.ok) {
+    throw new Error(responseData.message || 'Request failed');
+  }
+  return responseData;
 }
